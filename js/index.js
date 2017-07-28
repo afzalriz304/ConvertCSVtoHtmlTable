@@ -1,87 +1,49 @@
 var myApp=angular.module("myApp",[]);
 
-myApp.controller("myController",function($scope,$http){
-  $scope.phone='';
-  $scope.name='';
+myApp.controller("myController",function($scope){
+  $scope.fileNameChanged = function (event) {
+		var input = event.target;
 
-    $http.get('contacts.txt').then(function (response) {
-      $scope.contactsList=response.data;
-    })
-
-    $scope.getFileData=function () {
-      $http.get('contacts.txt').then(function (response) {
-        $scope.contactsList=response.data;
-      })
-    }
-    $scope.GetReport=function() {
-      $scope.getFileData();
-    }
-
-
-    $scope.checkDuplicate=function(mobileNumber) {
-      $scope.contactsList.forEach(function(obj) {
-        if(obj.phone===("+91"+mobileNumber)){
-          $("#duplicateNumber").show();
-          $("#duplicateNumber").text('DUPLICATE NUMBER');
-          $("#createContact").attr("disabled","true");
-        }
-      })
-    }
-    $scope.validate=function (mobileNumber) {
-      $scope.checkLength(mobileNumber);
-      $scope.checkDuplicate(mobileNumber);
-    }
-    $scope.checkLength=function (mobileNumber) {
-      $("#duplicateNumber").hide();
-      var warning=$("#duplicateNumber").val();
-      console.log(warning);
-      if(mobileNumber.toString().length==10){
-        $("#createContact").removeAttr("disabled");
-      }
-      else{
-        $("#createContact").attr("disabled","true");
-      }
-    }
-    //if($scope.addUser.phone.length>)
-    $scope.AddContact=function (obj) {
-
-      console.log(obj);
-      /** Add User **/
-        var params=obj;
-        console.log(params)
-        $http({
-          "url":"http://127.0.0.1:8081/AddJSONData",
-          "method":"POST",
-          "params":params
-        }).then(function (response) {
-          if(response.data==='success'){
-            $scope.getFileData();
-          }
-        })
-    }
-    $scope.getModal=function (item) {
-      var OTP=Math.floor(100000 + Math.random() * 900000);
-      $scope.user=item;
-      $scope.user.OTP=OTP;
-      console.log("user",$scope.user);
-    }
-    $scope.sendOTP=function (rowData) {
-      var params=rowData;
-      console.log(params)
-      $http({
-        "url":"http://127.0.0.1:8081/sendOTP",
-        "method":"POST",
-        "params":params
-      }).then(function (response) {
-        console.log(response.data);
-          $scope.contactsList.forEach(function (obj) {
-            if(obj.name==response.data.name){
-              obj.time=response.data.time;
-              obj.OTP=response.data.OTP;
-            }
-          })
-      })
-    }
-
-
+		var reader = new FileReader();
+		reader.onload = function(){
+		  var text = reader.result;
+		  console.log(reader.result);
+		  var fileTxt=reader.result;
+		  $scope.createTable(fileTxt);
+		};
+		reader.readAsText(input.files[0]);
+	};
+		
+	$scope.createTable=function(file){
+		var i=0;
+		var row=file.split("\n");
+		row.forEach(function(r,i){
+			var cells=r.split(",");
+			console.log("cell",i,cells);
+			if(i==0){
+				$("#importData").append("<thead id='tableHd'></thead>")
+				$("#tableHd").append("<tr id='title'></tr>");
+				cells.forEach(function(c){
+					$("#title").append("<th style='color:black;'>"+c.replace(/\"/g,'')+"</th>");
+				})
+			}
+			else{
+				var id="tbody"+i;
+				$("#importData").append("<tr id="+id+"></tr>");
+				cells.forEach(function(c){
+					$("#"+id).append("<td>"+c.replace(/\"/g,'')+"</td>");
+				})
+			}
+		})
+	}
+	
+	$scope.visibility=true;
+	
+	$scope.showHomePage=function(tab){
+		$scope.visibility=true;
+	}
+	
+	$scope.showMyProfile=function(tab){
+		$scope.visibility=false;
+	}
 })

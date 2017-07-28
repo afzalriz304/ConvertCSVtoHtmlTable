@@ -9,3 +9,6 @@
     background-color: lightgray !important;
     width: 30% !important;
 }
+tr th{
+	background-color: bisque;
+}
